@@ -1,8 +1,12 @@
 import { loadEnvironment } from './config/env.js';
 import { createApplication } from './core/application.js';
+import { createDatabaseService } from './database/index.js';
 
 const config = loadEnvironment();
 const application = createApplication(config);
+const databaseService = await createDatabaseService(config.databasePath);
+
+application.container.database = databaseService;
 
 process.on('unhandledRejection', (error) => {
   application.container.logger.error('Unhandled promise rejection.', {
@@ -17,5 +21,14 @@ process.on('uncaughtException', (error) => {
   });
   process.exitCode = 1;
 });
+
+const shutdown = async (signal) => {
+  application.container.logger.info(`Received ${signal}; shutting down.`);
+  application.client.destroy();
+  await databaseService.close();
+};
+
+process.once('SIGINT', () => void shutdown('SIGINT'));
+process.once('SIGTERM', () => void shutdown('SIGTERM'));
 
 await application.start();
