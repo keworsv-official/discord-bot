@@ -2,41 +2,38 @@
 
 Publiczny, modułowy i skalowalny bot Discord rozwijany w JavaScript z wykorzystaniem Discord.js.
 
-Projekt jest budowany z myślą o dużych i małych społecznościach. Docelowo będzie łączył administrację, moderację, bezpieczeństwo, automatyzację, system społecznościowy, ekonomię, statystyki, API oraz stronę WWW.
+Projekt jest budowany dla małych i dużych społeczności. Łączy administrację, moderację, bezpieczeństwo, automatyzację i funkcje społecznościowe, a architektura pozostawia miejsce na przyszłe API i panel WWW.
 
 ## Status projektu
 
-Projekt znajduje się obecnie w fazie fundamentów. Funkcje będą dodawane etapami i dokumentowane w kolejnych wydaniach.
+Projekt jest w aktywnym rozwoju przed pierwszym publicznym wydaniem `v0.1.0-beta`.
 
-## Założenia
+Kod developerski znajduje się na branchu `develop`. Zmiany przeznaczone do wydania trafiają przez Pull Request do `main` i są weryfikowane przed publikacją.
 
-- modularna architektura,
-- możliwość skalowania do wielu shardów,
-- konfiguracja niezależna dla każdego serwera,
-- SQLite na pierwszym etapie rozwoju,
-- warstwa dostępu do danych przygotowana pod przyszłą migrację do PostgreSQL,
-- rozbudowany system bezpieczeństwa,
-- publiczne API,
-- testowalny i czytelny kod,
-- dokładna dokumentacja zmian.
+## Funkcje obecnego etapu
 
-## Główne obszary
+- konfiguracja per serwer,
+- SQLite i migracje,
+- system komend slash,
+- administracja i moderacja,
+- historia sankcji,
+- AutoMod,
+- Anti-Spam,
+- podstawowy Anti-Raid,
+- audyt zdarzeń,
+- tickety i reporty,
+- narzędzia użytkowe i serwerowe,
+- logowanie oraz graceful shutdown,
+- testy jednostkowe fundamentów.
 
-- administracja i konfiguracja serwera,
-- moderacja i AutoMod,
-- Anti-Raid i Anti-Nuke,
-- tickety i zgłoszenia,
-- ekonomia i levelowanie,
-- role i automatyzacja,
-- backup konfiguracji,
-- statystyki i monitoring,
-- API,
-- strona WWW,
-- system Premium.
+## Dokumentacja
+
+- [Instalacja i wdrożenie](docs/installation.md)
+- [Konfiguracja](docs/configuration.md)
 
 ## Rozwój
 
-Projekt jest rozwijany etapami. Istotne zmiany będą publikowane jako GitHub Releases wraz z opisem nowych funkcji, zmian, poprawek, bezpieczeństwa i znanych problemów.
+Zmiany są grupowane w większe etapy. Każdy etap jest opisywany w Pull Requestach. Przed wydaniami użytkownicy otrzymają pełne Release Notes zawierające nowe funkcje, zmiany, poprawki, informacje bezpieczeństwa i znane ograniczenia.
 
 ## Technologia
 
@@ -44,8 +41,8 @@ Projekt jest rozwijany etapami. Istotne zmiany będą publikowane jako GitHub Re
 - Node.js 22+
 - Discord.js 14
 - SQLite
-- REST API
+- REST API — planowane
 
 ## Licencja
 
-Kod projektu będzie dostępny publicznie na GitHubie na zasadach określonych przez dedykowaną licencję projektu. Szczegółowe warunki zostaną dodane przed pierwszym publicznym wydaniem produkcyjnym.
+Warunki licencji projektu zostaną sfinalizowane przed pierwszym publicznym wydaniem. Do tego czasu nie należy traktować repozytorium jako zgody na kopiowanie, redystrybucję lub wykorzystanie kodu poza zakresem dozwolonym przez właściciela projektu.
