@@ -7,14 +7,41 @@ import { loadCommands } from './core/command-loader.js';
 import { publishCommands } from './core/command-publisher.js';
 import { registerInteractionHandler } from './core/interaction-handler.js';
 import { createDatabaseService } from './database/index.js';
+import { createAuditService } from './services/audit.js';
+import { createAutoModService } from './services/automod.js';
+import { createAntiRaidService } from './services/anti-raid.js';
+import { createAntiSpamService } from './services/antispam.js';
+import { createCooldownService } from './services/cooldown.js';
 import { createGuildSettingsService } from './services/guild-settings.js';
 import { createModerationService } from './services/moderation.js';
+import { registerAntiRaidEvents } from './events/anti-raid.js';
+import { registerProtectionEvents } from './events/anti-protection.js';
 
 const config = loadEnvironment();
 const databaseService = await createDatabaseService(config.databasePath);
 const application = createApplication(config, databaseService);
-application.container.services.guildSettings = createGuildSettingsService(databaseService.database);
-application.container.services.moderation = createModerationService(databaseService.database);
+const database = databaseService.database;
+
+Object.assign(application.container.services, {
+  audit: createAuditService(database),
+  autoMod: createAutoModService(),
+  antiRaid: createAntiRaidService(),
+  antiSpam: createAntiSpamService(),
+  cooldown: createCooldownService(),
+  guildSettings: createGuildSettingsService(database),
+  moderation: createModerationService(database),
+});
+
+registerProtectionEvents(application.client, {
+  autoMod: application.container.services.autoMod,
+  antiSpam: application.container.services.antiSpam,
+  logger: application.container.logger,
+});
+
+registerAntiRaidEvents(application.client, {
+  antiRaid: application.container.services.antiRaid,
+  logger: application.container.logger,
+});
 
 const registry = createCommandRegistry();
 const commandsDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), 'commands');
