@@ -7,13 +7,17 @@ import { loadCommands } from './core/command-loader.js';
 import { publishCommands } from './core/command-publisher.js';
 import { registerInteractionHandler } from './core/interaction-handler.js';
 import { createDatabaseService } from './database/index.js';
+import { createGuildSettingsService } from './services/guild-settings.js';
+import { createModerationService } from './services/moderation.js';
 
 const config = loadEnvironment();
 const databaseService = await createDatabaseService(config.databasePath);
 const application = createApplication(config, databaseService);
+application.container.services.guildSettings = createGuildSettingsService(databaseService.database);
+application.container.services.moderation = createModerationService(databaseService.database);
+
 const registry = createCommandRegistry();
 const commandsDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), 'commands');
-
 const loadedCommands = await loadCommands(commandsDirectory, registry);
 application.container.logger.info('Loaded commands.', { count: loadedCommands.length, commands: loadedCommands });
 registerInteractionHandler(application.client, registry, application.container.logger);
