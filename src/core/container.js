@@ -1,6 +1,8 @@
-export function createContainer({ config, logger }) {
-  return Object.freeze({
+export function createContainer({ config, logger, database = null, services = {} }) {
+  return {
     config,
     logger,
-  });
+    database,
+    services,
+  };
 }

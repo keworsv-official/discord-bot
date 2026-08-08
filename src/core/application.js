@@ -2,9 +2,9 @@ import { Client, GatewayIntentBits, Partials } from 'discord.js';
 import { createContainer } from './container.js';
 import { createLogger } from './logger.js';
 
-export function createApplication(config) {
+export function createApplication(config, database = null) {
   const logger = createLogger({ level: config.logLevel });
-  const container = createContainer({ config, logger });
+  const container = createContainer({ config, logger, database });
 
   const client = new Client({
     intents: [
@@ -15,6 +15,8 @@ export function createApplication(config) {
     ],
     partials: [Partials.Channel, Partials.GuildMember, Partials.Message, Partials.User],
   });
+
+  client.container = container;
 
   client.once('ready', (readyClient) => {
     logger.info(`Discord client ready as ${readyClient.user.tag}.`);

@@ -1,8 +1,30 @@
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { loadEnvironment } from './config/env.js';
 import { createApplication } from './core/application.js';
+import { createCommandRegistry } from './core/command-registry.js';
+import { loadCommands } from './core/command-loader.js';
+import { publishCommands } from './core/command-publisher.js';
+import { registerInteractionHandler } from './core/interaction-handler.js';
+import { createDatabaseService } from './database/index.js';
+import { createGuildSettingsService } from './services/guild-settings.js';
+import { createModerationService } from './services/moderation.js';
 
 const config = loadEnvironment();
-const application = createApplication(config);
+const databaseService = await createDatabaseService(config.databasePath);
+const application = createApplication(config, databaseService);
+application.container.services.guildSettings = createGuildSettingsService(databaseService.database);
+application.container.services.moderation = createModerationService(databaseService.database);
+
+const registry = createCommandRegistry();
+const commandsDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), 'commands');
+const loadedCommands = await loadCommands(commandsDirectory, registry);
+application.container.logger.info('Loaded commands.', { count: loadedCommands.length, commands: loadedCommands });
+registerInteractionHandler(application.client, registry, application.container.logger);
+
+application.client.once('ready', async (client) => {
+  await publishCommands(client, registry, config, application.container.logger);
+});
 
 process.on('unhandledRejection', (error) => {
   application.container.logger.error('Unhandled promise rejection.', {
@@ -17,5 +39,14 @@ process.on('uncaughtException', (error) => {
   });
   process.exitCode = 1;
 });
+
+const shutdown = async (signal) => {
+  application.container.logger.info(`Received ${signal}; shutting down.`);
+  application.client.destroy();
+  await databaseService.close();
+};
+
+process.once('SIGINT', () => void shutdown('SIGINT'));
+process.once('SIGTERM', () => void shutdown('SIGTERM'));
 
 await application.start();
