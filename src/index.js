@@ -14,8 +14,10 @@ import { createAntiSpamService } from './services/antispam.js';
 import { createCooldownService } from './services/cooldown.js';
 import { createGuildSettingsService } from './services/guild-settings.js';
 import { createModerationService } from './services/moderation.js';
+import { createTicketService } from './services/tickets.js';
 import { registerAntiRaidEvents } from './events/anti-raid.js';
 import { registerProtectionEvents } from './events/anti-protection.js';
+import { registerAuditEvents } from './events/audit.js';
 
 const config = loadEnvironment();
 const databaseService = await createDatabaseService(config.databasePath);
@@ -30,6 +32,7 @@ Object.assign(application.container.services, {
   cooldown: createCooldownService(),
   guildSettings: createGuildSettingsService(database),
   moderation: createModerationService(database),
+  tickets: createTicketService(database),
 });
 
 registerProtectionEvents(application.client, {
@@ -37,18 +40,17 @@ registerProtectionEvents(application.client, {
   antiSpam: application.container.services.antiSpam,
   logger: application.container.logger,
 });
-
 registerAntiRaidEvents(application.client, {
   antiRaid: application.container.services.antiRaid,
   logger: application.container.logger,
 });
+registerAuditEvents(application.client, application.container.services.audit, application.container.logger);
 
 const registry = createCommandRegistry();
 const commandsDirectory = path.join(path.dirname(fileURLToPath(import.meta.url)), 'commands');
 const loadedCommands = await loadCommands(commandsDirectory, registry);
 application.container.logger.info('Loaded commands.', { count: loadedCommands.length, commands: loadedCommands });
 registerInteractionHandler(application.client, registry, application.container.logger);
-
 application.client.once('ready', async (client) => {
   await publishCommands(client, registry, config, application.container.logger);
 });
@@ -58,12 +60,8 @@ process.on('unhandledRejection', (error) => {
     message: error instanceof Error ? error.message : String(error),
   });
 });
-
 process.on('uncaughtException', (error) => {
-  application.container.logger.error('Uncaught exception.', {
-    message: error.message,
-    stack: error.stack,
-  });
+  application.container.logger.error('Uncaught exception.', { message: error.message, stack: error.stack });
   process.exitCode = 1;
 });
 
@@ -72,7 +70,6 @@ const shutdown = async (signal) => {
   application.client.destroy();
   await databaseService.close();
 };
-
 process.once('SIGINT', () => void shutdown('SIGINT'));
 process.once('SIGTERM', () => void shutdown('SIGTERM'));
 
