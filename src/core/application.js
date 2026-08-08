@@ -16,6 +16,8 @@ export function createApplication(config, database = null) {
     partials: [Partials.Channel, Partials.GuildMember, Partials.Message, Partials.User],
   });
 
+  client.container = container;
+
   client.once('ready', (readyClient) => {
     logger.info(`Discord client ready as ${readyClient.user.tag}.`);
   });
