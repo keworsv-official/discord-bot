@@ -3,10 +3,8 @@ import { createApplication } from './core/application.js';
 import { createDatabaseService } from './database/index.js';
 
 const config = loadEnvironment();
-const application = createApplication(config);
 const databaseService = await createDatabaseService(config.databasePath);
-
-application.container.database = databaseService;
+const application = createApplication(config, databaseService);
 
 process.on('unhandledRejection', (error) => {
   application.container.logger.error('Unhandled promise rejection.', {
